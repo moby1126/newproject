@@ -26,7 +26,7 @@ jobs:
           ref: ${{ github.event.inputs.branch || github.ref }}
 
       - name: Set up Java 17
-        run: echo "Running uses: actions/setup-java@v4"
+        run: echo "Running uses: actions/setup-java"
         #with:
         #  distribution: temurin
         #  java-version: '17'
