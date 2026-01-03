@@ -1,4 +1,4 @@
-echo "Running name: Spring Boot CI
+name: Spring Boot CI
 
 on:
   pull_request:
@@ -25,8 +25,8 @@ jobs:
         with:
           ref: ${{ github.event.inputs.branch || github.ref }}
 
-      #- name: Set up Java 17
-      #  run: echo "Running uses"
+      - name: Set up Java 17
+        run: echo "Running uses"
         
       - name: Build
         run: echo "Running mvn -B clean compile"
