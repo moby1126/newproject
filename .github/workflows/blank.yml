@@ -27,11 +27,7 @@ jobs:
 
       - name: Set up Java 17
         run: echo "Running uses"
-        #with:
-        #  distribution: temurin
-        #  java-version: '17'
-        #  cache: maven
-
+        
       - name: Build
         run: echo "Running mvn -B clean compile"
 
