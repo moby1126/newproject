@@ -8,7 +8,7 @@ on:
       branch:
         description: 'Branch to run CI on'
         required: true
-        default: 'main'
+        default: 'master'
 
 jobs:
   ci:
