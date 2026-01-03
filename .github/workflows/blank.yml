@@ -1,79 +1,47 @@
-name: CI-CD Pipeline
+name: Spring Boot CI
 
 on:
   pull_request:
     types: [closed]
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Branch to run CI on'
+        required: true
+        default: 'main'
 
 jobs:
-
-  # ----------------------------
-  # CI JOB (Runs for ALL branches)
-  # ----------------------------
   ci:
-    if: github.event.pull_request.merged == true
+    if: |
+      (github.event_name == 'pull_request' &&
+       github.event.pull_request.merged == true)
+      ||
+      github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.branch || github.ref }}
 
-      - name: Set up Java (example)
+      - name: Set up Java 17
         uses: actions/setup-java@v4
         with:
+          distribution: temurin
           java-version: '17'
-          distribution: 'temurin'
+          cache: maven
 
       - name: Build
-        run: mvn clean compile
+        run: mvn -B clean compile
 
       - name: Run Tests
-        run: mvn test
+        run: mvn -B test
 
       - name: Code Coverage
         run: mvn jacoco:report
 
-      - name: Security Scan (OWASP / Snyk / Trivy)
+      - name: Security Scan
         run: |
-          echo "Run security scans here"
-          # example: mvn org.owasp:dependency-check-maven:check
-
-  # --------------------------------
-  # DEPLOY TO RELEASE ENV (QA/STAGE)
-  # --------------------------------
-  deploy-release:
-    needs: ci
-    if: |
-      github.event.pull_request.merged == true &&
-      startsWith(github.event.pull_request.base.ref, 'release/')
-    runs-on: ubuntu-latest
-    environment: staging
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Deploy to Staging
-        run: |
-          echo "Deploying to STAGING environment"
-          # kubectl apply / helm / terraform / ssh
-
-  # ----------------------------
-  # DEPLOY TO PROD (MAIN/MASTER)
-  # ----------------------------
-  deploy-prod:
-    needs: ci
-    if: |
-      github.event.pull_request.merged == true &&
-      (github.event.pull_request.base.ref == 'main' ||
-       github.event.pull_request.base.ref == 'master')
-    runs-on: ubuntu-latest
-    environment: production
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Deploy to Production
-        run: |
-          echo "Deploying to PRODUCTION"
-          # production deployment steps
+          mvn org.owasp:dependency-check-maven:check \
+          -DfailBuildOnCVSS=7
